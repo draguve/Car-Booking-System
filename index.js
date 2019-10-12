@@ -1,8 +1,11 @@
+require("dotenv").config()
 let express = require('express')
 
 let app = express();
 let mongoose = require("mongoose");
 let bodyParser = require("body-parser");
+
+const { AuthenticateUserToken } = require("./middleware/authMiddleware");
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -10,12 +13,13 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost/carBooker', { useNewUrlParser: true});
+mongoose.connect(process.env.MONGO_DB, { useNewUrlParser: true});
 var db = mongoose.connection;
 
 var port = process.env.PORT || 8080;
 
 let apiRoutes = require("./routes/api-routes.js")
+apiRoutes.use(AuthenticateUserToken);
 
 app.use("/api",apiRoutes);
 
