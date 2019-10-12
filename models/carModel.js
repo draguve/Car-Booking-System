@@ -1,4 +1,7 @@
 var mongoose = require('mongoose');
+Schema = mongoose.Schema;
+
+
 // Setup schema
 var carSchema = mongoose.Schema({
     number: {
@@ -15,9 +18,12 @@ var carSchema = mongoose.Schema({
         {
             from: String,
             to: String,
-            customerID: String
+            customerID: {
+                type: Schema.Types.ObjectId, 
+                ref: 'User' 
+            }
         }
     ]
 });
 // Export Car model
-var Car = module.exports = mongoose.model('car', carSchema);
+var Car = module.exports = mongoose.model('Car', carSchema);

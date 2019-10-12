@@ -5,22 +5,28 @@ let app = express();
 let mongoose = require("mongoose");
 let bodyParser = require("body-parser");
 
-const { AuthenticateUserToken } = require("./middleware/authMiddleware");
-
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.use(bodyParser.json());
+app.use((req, res, next) => {
+    bodyParser.json()(req, res, err => {
+        if (err) {
+            return res.sendStatus(400); // Bad request
+        }
+        next();
+    });
+});
 
 mongoose.connect(process.env.MONGO_DB, { useNewUrlParser: true});
 var db = mongoose.connection;
 
 var port = process.env.PORT || 8080;
 
-let apiRoutes = require("./routes/api-routes.js")
-apiRoutes.use(AuthenticateUserToken);
+let apiRoutes = require("./routes/api-routes.js");
+let authRoutes = require("./routes/auth-routes.js");
 
+app.use("/api",authRoutes);
 app.use("/api",apiRoutes);
 
 app.listen(port, function () {

@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+
 // Setup schema
 var userSchema = mongoose.Schema({
     username: {
@@ -12,4 +13,4 @@ var userSchema = mongoose.Schema({
     }
 });
 // Export User model
-var User = module.exports = mongoose.model('user', userSchema);
+var User = module.exports = mongoose.model('User', userSchema);

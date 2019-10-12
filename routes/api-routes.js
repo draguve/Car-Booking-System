@@ -1,5 +1,8 @@
 let router = require('express').Router();
-// Set default API response
+
+//add token check
+const { AuthenticateUserToken } = require("../middleware/auth.js");
+router.use(AuthenticateUserToken);
 
 router.get('/', function (req, res) {
     res.json({
