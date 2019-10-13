@@ -183,5 +183,52 @@ module.exports = {
                 results: {}
             });
         }
+    },DeleteCar: async (req, res) => {
+        try {
+            const userid = req.id;
+            CarModel.findById(req.params.carid,function(error, car){
+                if (error) throw Error(`Error occurred ${error}`);
+                let currentDate = new Date();
+                car.reserved.forEach(function(entry) {
+                    if(entry.from > currentDate){
+                        return res.status(400).json({
+                            error: {
+                                error: true,
+                                message: "Cannot delete a car that has a reservation in the future"
+                            },
+                            results: {}
+                        }); 
+                    };
+                });
+                if(!car.added_by.equals(userid)){
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "You cannot delete a car not added by you"
+                        },
+                        results: {}
+                    }); 
+                }
+                CarModel.findOneAndRemove({ _id: new ObjectId(req.params.carid) },function(error, car){
+                    if (error) throw Error(`Error occurred ${error}`);
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: "Deleted car"
+                    });
+                });
+            });
+            
+        } catch (err) {
+            return res.status(500).json({
+                error: {
+                    error: true,
+                    message: err.message
+                },
+                results: {}
+            });
+        }
     }
 }   
