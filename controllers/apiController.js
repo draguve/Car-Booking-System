@@ -132,17 +132,21 @@ module.exports = {
             CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
                 let currentDate = new Date();
+                let check = true;
                 car.reserved.forEach(function(entry) {
                     if(entry.from > currentDate){
-                        return res.status(400).json({
-                            error: {
-                                error: true,
-                                message: "Cannot update a car that has a reservation in the future"
-                            },
-                            results: {}
-                        }); 
+                        check = false;
                     };
                 });
+                if(!check){
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "Cannot update a car that has a reservation in the future"
+                        },
+                        results: {}
+                    }); 
+                }
                 if(!car.added_by.equals(userid)){
                     return res.status(400).json({
                         error: {
@@ -193,17 +197,21 @@ module.exports = {
             CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
                 let currentDate = new Date();
+                let check = true;
                 car.reserved.forEach(function(entry) {
                     if(entry.from > currentDate){
-                        return res.status(400).json({
-                            error: {
-                                error: true,
-                                message: "Cannot delete a car that has a reservation in the future"
-                            },
-                            results: {}
-                        }); 
+                        check=false;
                     };
                 });
+                if(!check){
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "Cannot delete a car that has a reservation in the future"
+                        },
+                        results: {}
+                    });
+                }
                 if(!car.added_by.equals(userid)){
                     return res.status(400).json({
                         error: {
@@ -279,7 +287,7 @@ module.exports = {
                 }); 
             }
             CarModel.findByIdAndUpdate(req.params.carid, {
-                $push: {"reserved": {from: fromDate, to: toDate,customerId: new ObjectId(userid)}}
+                $push: {"reserved": {from: fromDate, to: toDate,customerID: new ObjectId(userid)}}
             }, function(err, car){
                 if (err) throw Error(`Error occurred ${err}`);
                 return res.status(200).json({
