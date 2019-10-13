@@ -67,7 +67,6 @@ module.exports = {
                     query["cost_per_day"]["$lte"] = priceRange.upper;
                 }
             }
-            //Date validation
             if(to || from){ 
                 query["reserved"] = {};
                 query["reserved"]["$not"] = {};
@@ -87,6 +86,28 @@ module.exports = {
                         message: ''
                     },
                     results: cars
+                });
+            })
+        } catch (err) {
+            return res.status(500).json({
+                error: {
+                    error: true,
+                    message: err.message
+                },
+                results: {}
+            });
+        }
+    },
+    GetCar: async (req, res) => {
+        try {
+            CarModel.findById(req.params.carid,function(error, car){
+                if (error) throw Error(`Error occurred ${error}`);
+                return res.status(200).json({
+                    error: {
+                        error: false,
+                        message: ''
+                    },
+                    results: car
                 });
             })
         } catch (err) {
