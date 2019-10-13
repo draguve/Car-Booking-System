@@ -50,20 +50,23 @@ module.exports = {
             })
         }
         try {
-            const user = await UserModel.findOne({ username: username })
-            if (!user) {
-              throw new Error("User not registered");
-            }
-            const result = await bcrypt.compare(password, user.passhash);
-            if (!result) {
-              throw new Error("Password is incorrect");
-            }        
-            return res.json({
-                error: {
-                    error: false,
-                    message: ''
-                },
-                token: jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {expiresIn: 1440 })
+            UserModel.findOne({ username: username },async(error, user) => {
+                if (error) throw Error(`Error occurred ${error}`);
+                if (!user) {
+                    throw new Error("User not registered");
+                  }
+                  const result = await bcrypt.compare(password, user.passhash);
+                  if (!result) {
+                    throw new Error("Password is incorrect");
+                  }
+                  return res.json({
+                      error: {
+                          error: false,
+                          message: ''
+                      },
+                      token: jwt.sign({ _id: user._id.toString() }, process.env.SECRET_KEY, {expiresIn: 1440 })
+                      
+                  });
             });
         } catch (err) {
             return res.status(500).json({
