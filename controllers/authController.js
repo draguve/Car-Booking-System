@@ -18,7 +18,7 @@ module.exports = {
             const user = new UserModel({username: req.body.username, passhash: hash })
             user.save(function(err,newUser) {
                 if (err) throw Error(`Error occurred while saving ${err}`);
-                let tok = jwt.sign( { id: newUser._id }, process.env.SECRET_KEY, {expiresIn: 1440 })
+                let tok = jwt.sign( { _id: newUser._id }, process.env.SECRET_KEY, {expiresIn: 1440 })
                 return res.json({
                     error: {
                         error: false,
@@ -63,7 +63,7 @@ module.exports = {
                     error: false,
                     message: ''
                 },
-                token: jwt.sign({ id: user._id }, process.env.SECRET_KEY, {expiresIn: 1440 })
+                token: jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {expiresIn: 1440 })
             });
         } catch (err) {
             return res.status(500).json({

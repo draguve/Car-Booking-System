@@ -14,7 +14,7 @@ module.exports = {
                         data: {}
                     });
                 } else {
-                    req._id = decoded.id;                    
+                    req._id = decoded._id;                    
                     next();
                 }   
             });

@@ -6,18 +6,30 @@ Schema = mongoose.Schema;
 var carSchema = mongoose.Schema({
     number: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     model: {
         type: String,
         required: true
     },
-    capacity: Number,
-    cost_per_day: Number,
+    capacity: {
+        type: Number,
+        required: true
+    },
+    cost_per_day: {
+        type: Number,
+        required: true
+    },
+    added_by: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     reserved: [
         {
-            from: String,
-            to: String,
+            from: Date,
+            to: Date,
             customerID: {
                 type: Schema.Types.ObjectId, 
                 ref: 'User' 
