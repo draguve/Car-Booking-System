@@ -12,7 +12,13 @@ app.use(bodyParser.urlencoded({
 app.use((req, res, next) => {
     bodyParser.json()(req, res, err => {
         if (err) {
-            return res.sendStatus(400); // Bad request
+            return res.status(400).json({
+                err: {
+                    error: true,
+                    message: err
+                },
+                results: {}
+            });  // Bad request
         }
         next();
     });

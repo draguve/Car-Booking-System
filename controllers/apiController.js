@@ -3,6 +3,10 @@ UserModel = require("../models/customerModel.js");
 CarModel = require("../models/carModel.js");
 var ObjectId = mongoose.Types.ObjectId;
 
+function isValidDate(d) {
+    return d instanceof Date && !isNaN(d);
+}
+
 module.exports = {
     AddCar: async (req, res) => {
         try {
@@ -221,6 +225,72 @@ module.exports = {
                 });
             });
             
+        } catch (err) {
+            return res.status(500).json({
+                error: {
+                    error: true,
+                    message: err.message
+                },
+                results: {}
+            });
+        }
+    },ReserveCar: async (req, res) => {
+        try {
+            const userid = req.id;
+            const {to , from } = req.body;
+            let toDate = new Date(to);
+            let fromDate = new Date(from);
+            let currentDate = new Date();
+            if(!isValidDate(toDate) || !isValidDate(fromDate)){
+                return res.status(400).json({
+                    error: {
+                        error: true,
+                        message: "dates are not valid"
+                    },
+                    results: {}
+                }); 
+            }
+            if(toDate<fromDate || toDate<currentDate || fromDate<currentDate){
+                return res.status(400).json({
+                    error: {
+                        error: true,
+                        message: "please check the dates specified"
+                    },
+                    results: {}
+                }); 
+            }
+            let check = true;
+            await CarModel.findById(req.params.carid,function(error, car){
+                if (error) throw Error(`Error occurred ${error}`);
+                let currentDate = new Date();
+                car.reserved.forEach(function(entry) {
+                    if(fromDate <= entry.to && toDate >= entry.from){
+                        check = false;
+                    };
+                });
+            });
+            if(!check){    
+                return res.status(400).json({
+                    error: {
+                        error: true,
+                        message: "This car already has a reservation between those dates"
+                    },
+                    results: {}
+                }); 
+            }
+            CarModel.findByIdAndUpdate(req.params.carid, {
+                $push: {"reserved": {from: fromDate, to: toDate,customerId: new ObjectId(userid)}}
+            }, function(err, car){
+                if (err) throw Error(`Error occurred ${err}`);
+                return res.status(200).json({
+                    error: {
+                        error: false,
+                        message: ""
+                    },
+                    results: "Car Booked",
+                    car
+                }); 
+            });
         } catch (err) {
             return res.status(500).json({
                 error: {
