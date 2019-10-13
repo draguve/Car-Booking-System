@@ -1,12 +1,13 @@
 var mongoose = require('mongoose');
 UserModel = require("../models/customerModel.js");
 CarModel = require("../models/carModel.js");
-
+var ObjectId = mongoose.Types.ObjectId;
 
 module.exports = {
     AddCar: async (req, res) => {
         try {
-            const {number, model,capacity,cost_per_day,_id } = req.body;
+            const {number, model,capacity,cost_per_day } = req.body;
+            const userid = req.id;
             let num =  number.replace(/ /g,'').toLowerCase()
             if(await CarModel.findOne({ number: num})){
                 return res.json({
@@ -23,7 +24,7 @@ module.exports = {
                 model: model,
                 capacity: capacity,
                 cost_per_day: cost_per_day,
-                added_by: mongoose.Types.ObjectId(_id),
+                added_by: ObjectId(userid),
                 reserved: []
             });
             car.save(function(err,newUser) {
@@ -48,7 +49,8 @@ module.exports = {
     },
     GetCars: async (req, res) => {
         try {
-            const {model,capacity,priceRange,_id,from,to} = req.body;
+            const {model,capacity,priceRange,from,to} = req.body;
+            const id = req.id;
 
             query = {};
             if(model){
@@ -67,7 +69,6 @@ module.exports = {
                     query["cost_per_day"]["$lte"] = priceRange.upper;
                 }
             }
-            //Date validation
             if(to || from){ 
                 query["reserved"] = {};
                 query["reserved"]["$not"] = {};
@@ -89,6 +90,90 @@ module.exports = {
                     results: cars
                 });
             })
+        } catch (err) {
+            return res.status(500).json({
+                error: {
+                    error: true,
+                    message: err.message
+                },
+                results: {}
+            });
+        }
+    },
+    GetCar: async (req, res) => {
+        try {
+            CarModel.findById(req.params.carid,function(error, car){
+                if (error) throw Error(`Error occurred ${error}`);
+                return res.status(200).json({
+                    error: {
+                        error: false,
+                        message: ''
+                    },
+                    results: car
+                });
+            })
+        } catch (err) {
+            return res.status(500).json({
+                error: {
+                    error: true,
+                    message: err.message
+                },
+                results: {}
+            });
+        }
+    },UpdateCar: async (req, res) => {
+        try {
+            const {number,model,capacity,cost_per_day} = req.body;
+            const userid = req.id;
+            CarModel.findById(req.params.carid,function(error, car){
+                if (error) throw Error(`Error occurred ${error}`);
+                let currentDate = new Date();
+                car.reserved.forEach(function(entry) {
+                    if(entry.from > currentDate){
+                        return res.status(400).json({
+                            error: {
+                                error: true,
+                                message: "Cannot update a car that has a reservation in the future"
+                            },
+                            results: {}
+                        }); 
+                    };
+                });
+                if(!car.added_by.equals(userid)){
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "You cannot update a car not added by you"
+                        },
+                        results: {}
+                    }); 
+                }
+                toUpdate = {};
+                if(number){
+                    toUpdate["number"] = number;
+                }
+                if(model){
+                    toUpdate["model"] = model;
+                }
+                if(capacity){
+                    toUpdate["capacity"] = capacity;
+                }
+                if(cost_per_day){
+                    toUpdate["cost_per_day"] = cost_per_day;
+                }
+
+                CarModel.updateOne({ _id: new ObjectId(req.params.carid) },toUpdate,function(error, car){
+                    if (error) throw Error(`Error occurred ${error}`);
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: car
+                    });
+                });
+            });
+            
         } catch (err) {
             return res.status(500).json({
                 error: {

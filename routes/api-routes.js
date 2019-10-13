@@ -1,6 +1,6 @@
 let router = require('express').Router();
 
-const { AddCar , GetCars} = require("../controllers/apiController.js");
+const { AddCar , GetCars , GetCar , UpdateCar} = require("../controllers/apiController.js");
 
 //add token check
 const { AuthenticateUserToken } = require("../middleware/auth.js");
@@ -15,6 +15,8 @@ router.get('/', function (req, res) {
 
 router.get('/cars',GetCars);
 router.post('/cars',AddCar);
+router.get('/cars/:carid',GetCar);
+router.post('/cars/:carid',UpdateCar);
 
 // Export API routes
 module.exports = router;
