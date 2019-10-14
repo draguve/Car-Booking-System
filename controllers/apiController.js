@@ -12,6 +12,14 @@ module.exports = {
         try {
             const {number, model,capacity,cost_per_day } = req.body;
             const userid = req.id;
+            if(!number || !model || !capacity || !cost_per_day){
+                return res.json({
+                    error: {
+                        error: true,
+                        message: 'Data missing requires a number,model,capacity,cost_per_day'
+                    }
+                });
+            }
             let num =  number.replace(/ /g,'').toLowerCase()
             if(await CarModel.findOne({ number: num})){
                 return res.json({
@@ -21,7 +29,6 @@ module.exports = {
                     }
                 });
             }
-
             //Create new car 
             const car = new CarModel({
                 number: num,
@@ -127,8 +134,17 @@ module.exports = {
     },
     GetCar: async (req, res) => {
         try {
-            CarModel.findById(req.params.carid,function(error, car){
+            await CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
+                if(!car){
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: "No car registered with the id"
+                    });
+                }
                 return res.status(200).json({
                     error: {
                         error: false,
@@ -150,8 +166,17 @@ module.exports = {
         try {
             const {number,model,capacity,cost_per_day} = req.body;
             const userid = req.id;
-            CarModel.findById(req.params.carid,function(error, car){
+            await CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
+                if(!car){
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: "No car registered with the id"
+                    });
+                }
                 let currentDate = new Date();
                 let check = true;
                 car.reserved.forEach(function(entry) {
@@ -215,8 +240,17 @@ module.exports = {
     },DeleteCar: async (req, res) => {
         try {
             const userid = req.id;
-            CarModel.findById(req.params.carid,function(error, car){
+            await CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
+                if(!car){
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: "No car registered with the id"
+                    });
+                }
                 let currentDate = new Date();
                 let check = true;
                 car.reserved.forEach(function(entry) {
@@ -291,6 +325,15 @@ module.exports = {
             let check = true;
             await CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
+                if(!car){
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ''
+                        },
+                        results: "No car registered with the id"
+                    });
+                }
                 let currentDate = new Date();
                 car.reserved.forEach(function(entry) {
                     if(fromDate <= entry.to && toDate >= entry.from){
