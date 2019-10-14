@@ -73,17 +73,38 @@ module.exports = {
                     query["cost_per_day"]["$lte"] = priceRange.upper;
                 }
             }
+            
+            
             if(to || from){ 
+                let toDate = new Date(to);
+                let fromDate = new Date(from);
                 query["reserved"] = {};
                 query["reserved"]["$not"] = {};
                 query["reserved"]["$not"]["$elemMatch"] = {};
-                if(to){
-                    query["reserved"]["$not"]["$elemMatch"]["from"] = {$lt: new Date(to)};
+                if(isValidDate(toDate)){
+                    query["reserved"]["$not"]["$elemMatch"]["from"] = {$lt: toDate};
+                }else{
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "dates are not valid"
+                        },
+                        results: {}
+                    }); 
                 }
-                if(from){
-                    query["reserved"]["$not"]["$elemMatch"]["to"] = {$gt: new Date(to)};
+                if(isValidDate(fromDate)){
+                    query["reserved"]["$not"]["$elemMatch"]["to"] = {$gt: fromDate};
+                }else{
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "dates are not valid"
+                        },
+                        results: {}
+                    }); 
                 }
             }
+            console.log(query);
             CarModel.find(query,function(error, cars){
                 if (error) throw Error(`Error occurred ${error}`);
                 return res.status(200).json({
