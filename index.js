@@ -32,7 +32,7 @@ var port = process.env.PORT || 8080;
 let apiRoutes = require("./routes/api-routes.js");
 let authRoutes = require("./routes/auth-routes.js");
 
-app.use("/auth",authRoutes);
+app.use("/api",authRoutes);
 app.use("/api",apiRoutes);
 
 app.listen(port, function () {
