@@ -1,11 +1,16 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 UserModel = require("../models/customerModel.js");
+const { struct } = require('superstruct'); 
 
 module.exports = {
     Register: async (req, res) => {
         try {
-            const { username, password } = req.body;
+            const User = struct({
+                username: 'string',
+                password: 'string'
+              });
+            const { username, password } = User(req.body);
             if(await UserModel.findOne({ username: username })){
                 return res.json({
                     error: {
@@ -39,17 +44,12 @@ module.exports = {
     },
     
     Login: async(req, res) => {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({
-                error: {
-                    error: true,
-                    message: "Username or Password missing"
-                },
-                data: {}
-            })
-        }
         try {
+            const User = struct({
+                username: 'string',
+                password: 'string'
+            });
+            const { username, password } = User(req.body);
             UserModel.findOne({ username: username },async(error, user) => {
                 if (error) throw Error(`Error occurred ${error}`);
                 if (!user) {

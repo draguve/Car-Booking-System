@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 UserModel = require("../models/customerModel.js");
 CarModel = require("../models/carModel.js");
+const { struct } = require('superstruct'); 
 var ObjectId = mongoose.Types.ObjectId;
 
 function isValidDate(d) {
@@ -10,16 +11,14 @@ function isValidDate(d) {
 module.exports = {
     AddCar: async (req, res) => {
         try {
-            const {number, model,capacity,cost_per_day } = req.body;
+            const Car = struct({
+                number: 'string',
+                model: 'string',
+                capacity: 'number',
+                cost_per_day: 'number',
+              });
+            const {number, model,capacity,cost_per_day } = Car(req.body);
             const userid = req.id;
-            if(!number || !model || !capacity || !cost_per_day){
-                return res.json({
-                    error: {
-                        error: true,
-                        message: 'Data missing requires a number,model,capacity,cost_per_day'
-                    }
-                });
-            }
             let num =  number.replace(/ /g,'').toLowerCase()
             if(await CarModel.findOne({ number: num})){
                 return res.json({
@@ -60,9 +59,20 @@ module.exports = {
     },
     GetCars: async (req, res) => {
         try {
-            const {model,capacity,priceRange,from,to} = req.body;
             const id = req.id;
-
+            const PriceRange = struct({
+                upper: "number?",
+                lower: "number?"
+            });
+            const Car = struct({
+                model: 'string?',
+                capacity: 'number?',
+                to: "string?",
+                from: "string?",
+                priceRange: PriceRange
+            });
+            
+            const {model,capacity,priceRange,from,to } = Car(req.body);
             query = {};
             if(model){
                 query["model"] =  new RegExp('^'+model+'$', "i");
@@ -80,7 +90,6 @@ module.exports = {
                     query["cost_per_day"]["$lte"] = priceRange.upper;
                 }
             }
-            
             
             if(to || from){ 
                 let toDate = new Date(to);
@@ -111,7 +120,6 @@ module.exports = {
                     }); 
                 }
             }
-            console.log(query);
             CarModel.find(query,function(error, cars){
                 if (error) throw Error(`Error occurred ${error}`);
                 return res.status(200).json({
@@ -164,7 +172,13 @@ module.exports = {
         }
     },UpdateCar: async (req, res) => {
         try {
-            const {number,model,capacity,cost_per_day} = req.body;
+            const Car = struct({
+                number: 'string?',
+                model: 'string?',
+                capacity: 'number?',
+                cost_per_day: 'number?',
+              });
+            const {number, model,capacity,cost_per_day } = Car(req.body);
             const userid = req.id;
             await CarModel.findById(req.params.carid,function(error, car){
                 if (error) throw Error(`Error occurred ${error}`);
@@ -299,8 +313,12 @@ module.exports = {
         }
     },ReserveCar: async (req, res) => {
         try {
+            const ReserveRequest = struct({
+                to: 'string',
+                from: 'string'
+              });
+            const {to,from} = ReserveRequest(req.body);
             const userid = req.id;
-            const {to , from } = req.body;
             let toDate = new Date(to);
             let fromDate = new Date(from);
             let currentDate = new Date();
