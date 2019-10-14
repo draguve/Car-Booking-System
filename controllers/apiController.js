@@ -340,28 +340,28 @@ module.exports = {
                         check = false;
                     };
                 });
-            });
-            if(!check){    
-                return res.status(400).json({
-                    error: {
-                        error: true,
-                        message: "This car already has a reservation between those dates"
-                    },
-                    results: {}
-                }); 
-            }
-            CarModel.findByIdAndUpdate(req.params.carid, {
-                $push: {"reserved": {from: fromDate, to: toDate,customerID: new ObjectId(userid)}}
-            }, function(err, car){
-                if (err) throw Error(`Error occurred ${err}`);
-                return res.status(200).json({
-                    error: {
-                        error: false,
-                        message: ""
-                    },
-                    results: "Car Booked",
-                    car
-                }); 
+                if(!check){    
+                    return res.status(400).json({
+                        error: {
+                            error: true,
+                            message: "This car already has a reservation between those dates"
+                        },
+                        results: {}
+                    }); 
+                }
+                CarModel.findByIdAndUpdate(req.params.carid, {
+                    $push: {"reserved": {from: fromDate, to: toDate,customerID: new ObjectId(userid)}}
+                }, function(err, car){
+                    if (err) throw Error(`Error occurred ${err}`);
+                    return res.status(200).json({
+                        error: {
+                            error: false,
+                            message: ""
+                        },
+                        results: "Car Booked",
+                        car
+                    }); 
+                });    
             });
         } catch (err) {
             return res.status(500).json({
