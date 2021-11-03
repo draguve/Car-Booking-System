@@ -30,6 +30,6 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.7.4",
     "superstruct": "^0.8.2",
-    "validator": "^11.1.0"
+    "validator": "^13.7.0"
   }
 }
